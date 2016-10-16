@@ -26,7 +26,16 @@ $(function() {
         //acceptedFiles: '.svg',
         init: function() {
             myDropzone = this;
+            this.on('errorfile', function(file) {
+                console.log('error');
+        });
             this.on('addedfile', function(file) {
+                if (file.type != "image/svg+xml") {
+                    $.notify("Invalid format, only SVG is supported", "error");
+                    this.removeFile(file);
+                    return;
+                }
+
                 $(".note").hide();
 
                 if (previousFile != null) {
@@ -45,8 +54,9 @@ $(function() {
         }
     });
 
-    current_svg_xml = $("#svgTitle")[0].outerHTML;
-        generatePointsFromSvg();
+    // Directly drop the title logo to debug
+    // current_svg_xml = $("#svgTitle")[0].outerHTML;
+    // generatePointsFromSvg();
 });
 
 function getInfosFromPaths(paths) {
@@ -160,33 +170,3 @@ function manageDropFromTitle(evt) {
         console.log(current_svg_xml);
     }
 }
-
-/* Function to return the DOM object's in crossbrowser style */
-function widthCrossBrowser(element) {
-    /* element - DOM element */
-
-    /* For FireFox & IE */
-    if(     element.width != undefined && element.width != '' && element.width != 0){
-        this.width  =   element.width;
-    }
-    /* For FireFox & IE */
-    else if(element.clientWidth != undefined && element.clientWidth != '' && element.clientWidth != 0){
-        this.width  =   element.clientWidth;
-    }
-    /* For Chrome * FireFox */
-    else if(element.naturalWidth != undefined && element.naturalWidth != '' && element.naturalWidth != 0){
-        this.width  =   element.naturalWidth;
-    }
-    /* For FireFox & IE */
-    else if(element.offsetWidth != undefined && element.offsetWidth != '' && element.offsetWidth != 0){
-        this.width  =   element.offsetWidth;
-    }       
-        /*
-            console.info(' widthWidth width:',      element.width);
-            console.info(' clntWidth clientWidth:', element.clientWidth);
-            console.info(' natWidth naturalWidth:', element.naturalWidth);
-            console.info(' offstWidth offsetWidth:',element.offsetWidth);       
-            console.info(' parseInt(this.width):',parseInt(this.width));
-        */
-    return parseInt(this.width);
-}  
