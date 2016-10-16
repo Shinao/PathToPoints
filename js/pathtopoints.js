@@ -8,12 +8,13 @@ $(function() {
 
     $("#step_point").val(step_point.toString());
     $('#btn-apply').click(function() {
+        HoldOn.open({message:"Applying new step points length to SVG"});
         step_point = parseInt($("#step_point").val());
         if (step_point <= 0) step_point = 1;
-        generatePointsFromSvg();
+        setTimeout(generatePointsFromSvg, 500);
     });
 
-    paper = Raphael(document.getElementById("canvas"), '100%', '70%');
+    paper = Raphael(document.getElementById("canvas"), '100%', '100%');
     current_displayed_paths = null;
 
     var previousFile = null;
@@ -26,9 +27,7 @@ $(function() {
         //acceptedFiles: '.svg',
         init: function() {
             myDropzone = this;
-            this.on('errorfile', function(file) {
-                console.log('error');
-        });
+
             this.on('addedfile', function(file) {
                 if (file.type != "image/svg+xml") {
                     $.notify("Invalid format, only SVG is supported", "error");
@@ -36,6 +35,7 @@ $(function() {
                     return;
                 }
 
+                HoldOn.open({message:"Generating points from SVG"});
                 $(".note").hide();
 
                 if (previousFile != null) {
@@ -48,15 +48,15 @@ $(function() {
 
                 read.onloadend = function() {
                     current_svg_xml = read.result;
-                    generatePointsFromSvg(read.result);
+                    setTimeout(generatePointsFromSvg, 500);
                 }   
             });
         }
     });
 
     // Directly drop the title logo to debug
-    // current_svg_xml = $("#svgTitle")[0].outerHTML;
-    // generatePointsFromSvg();
+    current_svg_xml = $("#svgTitle")[0].outerHTML;
+    generatePointsFromSvg();
 });
 
 function getInfosFromPaths(paths) {
@@ -98,6 +98,12 @@ function getInfosFromPaths(paths) {
     paths_info.height = (paths_info.bbox_bottom.y + paths_info.bbox_bottom.height) - paths_info.bbox_top.y;
     paths_info.x = paths_info.bbox_left.x;
     paths_info.y = paths_info.bbox_top.y;
+    if (paths_info.height > paths_info.width)
+        paths_info.scale = (paths_info.height > paper.canvas.clientHeight) ? (paper.canvas.clientHeight / paths_info.height) : 1;
+    else
+        paths_info.scale = (paths_info.width > paper.canvas.clientWidth) ? (paper.canvas.clientWidth / paths_info.width) : 1;
+
+        console.log(paths_info);
 
     // Display bboxes used for centering paths
     // var bboxes = [paths_info.bbox_right, paths_info.bbox_left, paths_info.bbox_top, paths_info.bbox_bottom];
@@ -122,8 +128,8 @@ function generatePointsFromSvg() {
 
     // Read each paths from svg
     var paths_info = getInfosFromPaths(paths);
-    var offset_path_x = (paths_info.x * -1) + (paper.canvas.clientWidth / 2) - (paths_info.width / 2);
-    var offset_path_y = (paths_info.y * -1) + (paper.canvas.clientHeight / 2) - (paths_info.height / 2);
+    var offset_path_x = (paths_info.x * paths_info.scale * -1) + (paper.canvas.clientWidth / 2) - (paths_info.width * paths_info.scale / 2);
+    var offset_path_y = (paths_info.y * paths_info.scale * -1) + (paper.canvas.clientHeight / 2) - (paths_info.height * paths_info.scale / 2);
     for (var i = 0; i < paths.length; ++i) {
         var path = $($(paths).get(i)).attr('d').replace(' ', ',');
 
@@ -135,16 +141,17 @@ function generatePointsFromSvg() {
             var point = Raphael.getPointAtLength(path, c);
 
             data_points += point.x + "," + point.y + "<br>";
-            var circle = paper.circle(point.x, point.y, 2)
+            var circle = paper.circle(point.x * paths_info.scale, point.y * paths_info.scale, 2)
                 .attr("fill", color)
                 .attr("stroke", "none")
-                .transform("T" + offset_path_x + "," + offset_path_y);
+                .transform("T" + offset_path_x * paths_info.scale + "," + offset_path_y * paths_info.scale);
         }
 
         addBelow(i, color, data_points, c / step_point);
     }
     
-    $('.bellows').bellows();        
+    $('.bellows').bellows();
+    HoldOn.close();  
 }
 
 function addBelow(index, color, data, nb_pts) {
