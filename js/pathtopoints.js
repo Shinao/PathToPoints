@@ -1,7 +1,10 @@
 var step_point = 20;
-var current_svg_text = "";
+var current_svg_xml = "";
+var event;
 
 $(function() {
+    document.getElementById('dropzone').addEventListener('drop', manageDropFromTitle, false);
+
     $("#step_point").val(step_point.toString());
     $('#btn-apply').click(function() {
         step_point = parseInt($("#step_point").val());
@@ -18,10 +21,11 @@ $(function() {
         maxFilesize: 5,
         maxThumbnailFilesize: 1,
         autoProcessQueue: false,
-        acceptedFiles: '.svg',
+        //acceptedFiles: '.svg',
         init: function() {
             myDropzone = this;
             this.on('addedfile', function(file) {
+                console.log(file);
                 $(".note").hide();
 
                 if (previousFile != null) {
@@ -34,7 +38,7 @@ $(function() {
                 read.readAsBinaryString(file);
 
                 read.onloadend = function(){
-                    current_svg_text = read.result;
+                    current_svg_xml = read.result;
                     generatePointsFromSvg(read.result);
                 }        
             });
@@ -49,7 +53,7 @@ function generatePointsFromSvg() {
     $('.bellows').show();
 
     var parser = new DOMParser();
-    var doc = parser.parseFromString(current_svg_text, "application/xml");
+    var doc = parser.parseFromString(current_svg_xml, "application/xml");
     var paths = doc.getElementsByTagName("path");
     current_displayed_paths = paths;
 
@@ -105,3 +109,15 @@ function addBelow(index, color, data) {
 
       $('.bellows').append(below);
   }
+
+// Hacky function to manage "fake" drop from image title
+function manageDropFromTitle(evt) {
+    var svgUrl = evt.dataTransfer.getData('URL');
+    
+    // Load local svg file from URL
+    if (svgUrl.startsWith("file://") && svgUrl.endsWith(".svg")) {
+        current_svg_xml = $("#svgTitle")[0].outerHTML;
+        generatePointsFromSvg();
+        console.log(current_svg_xml);
+    }
+}

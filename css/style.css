@@ -6,6 +6,16 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 
 body { line-height: 1; }
 
+#title {
+   display: block;
+   margin: 0 auto;
+   padding-top: 16px;
+}
+
+#svgTitle {
+  display: none;
+}
+
 ol, ul { list-style: none; }
 
 blockquote, q { quotes: none; }
