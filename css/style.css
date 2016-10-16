@@ -16,6 +16,15 @@ body { line-height: 1; }
   display: none;
 }
 
+input {
+  width: 50px;
+}
+
+.bellows__header span {
+  margin-left: 16px;
+  font-size: 12px;
+}
+
 ol, ul { list-style: none; }
 
 blockquote, q { quotes: none; }
@@ -235,6 +244,7 @@ html, body {
 }
 
 #canvas {
+  padding-right: 10%;
   float: right;
   width: 70%;
   height: 70%;
