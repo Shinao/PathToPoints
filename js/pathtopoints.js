@@ -55,8 +55,8 @@ $(function() {
     });
 
     // Directly drop the title logo to debug
-    current_svg_xml = $("#svgTitle")[0].outerHTML;
-    generatePointsFromSvg();
+    // current_svg_xml = $("#svgTitle")[0].outerHTML;
+    // generatePointsFromSvg();
 });
 
 function getInfosFromPaths(paths) {
