@@ -171,7 +171,7 @@ function manageDropFromTitle(evt) {
     var svgUrl = evt.dataTransfer.getData('URL');
     
     // Load local svg file from URL
-    if (svgUrl.startsWith("file://") && svgUrl.endsWith(".svg")) {
+    if (svgUrl.endsWith("img/TitlePathToPoints.svg")) {
         current_svg_xml = $("#svgTitle")[0].outerHTML;
         generatePointsFromSvg();
         console.log(current_svg_xml);
