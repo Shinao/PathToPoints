@@ -130,6 +130,8 @@ function generatePointsFromSvg() {
     var paths_info = getInfosFromPaths(paths);
     var offset_path_x = (paths_info.x * paths_info.scale * -1) + (paper.canvas.clientWidth / 2) - (paths_info.width * paths_info.scale / 2);
     var offset_path_y = (paths_info.y * paths_info.scale * -1) + (paper.canvas.clientHeight / 2) - (paths_info.height * paths_info.scale / 2);
+    var all_points = "";
+    var all_points_count = 0;
     for (var i = 0; i < paths.length; ++i) {
         var path = $($(paths).get(i)).attr('d').replace(' ', ',');
 
@@ -140,28 +142,32 @@ function generatePointsFromSvg() {
         for (c = 0; c < Raphael.getTotalLength(path); c += step_point) {
             var point = Raphael.getPointAtLength(path, c);
 
-            data_points += point.x + "," + point.y + "<br>";
+            data_points += point.x + "," + point.y + "&#13;";
             var circle = paper.circle(point.x * paths_info.scale, point.y * paths_info.scale, 2)
                 .attr("fill", color)
                 .attr("stroke", "none")
                 .transform("T" + offset_path_x * paths_info.scale + "," + offset_path_y * paths_info.scale);
         }
 
-        addBelow(i, color, data_points, c / step_point);
+        all_points_count += c;
+        all_points += data_points + "#&#13;";
+        addBelow("Path " + i, color, data_points, c / step_point);
     }
+
+    addBelow("All Paths", "#2A2A2A", all_points, all_points_count / step_point);
     
     $('.bellows').bellows();
     HoldOn.close();  
 }
 
-function addBelow(index, color, data, nb_pts) {
+function addBelow(name, color, data, nb_pts) {
       var below = "";
       
       below += "<div class='bellows__item'><div class='bellows__header' style='background-color:" + color + "'>";
-      below += "Path " + index ;
+      below += name ;
       below += "<span>" + nb_pts + " pts</span>";
       below += "</div><div class='bellows__content'>";
-      below += data + "</div></div>";
+      below += "<textarea rows='10' cols='50'>" + data + "</textarea></div></div>";
 
       $('.bellows').append(below);
   }

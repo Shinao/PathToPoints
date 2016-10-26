@@ -20,6 +20,10 @@ input {
   width: 50px;
 }
 
+.bellows textarea {
+  width: 100%;
+}
+
 .bellows__header span {
   margin-left: 16px;
   font-size: 12px;
