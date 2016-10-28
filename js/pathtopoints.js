@@ -8,8 +8,12 @@ $(function() {
 
     $("#step_point").val(step_point.toString());
     $('#btn-apply').click(function() {
-        HoldOn.open({message:"Applying new step points length to SVG"});
         step_point = parseInt($("#step_point").val());
+
+        if (current_svg_xml == "")
+            return;
+            
+        HoldOn.open({message:"Applying new step points length to SVG"});
         if (step_point <= 0) step_point = 1;
         setTimeout(generatePointsFromSvg, 500);
     });
