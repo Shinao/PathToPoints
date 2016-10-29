@@ -289,7 +289,37 @@ ul, ol { list-style-position: inside; }
 a { color: #0087F7; text-decoration: none; }
 a:hover { border-bottom: 2px solid #0087F7; }
 
-#btn-apply {
+.dialog {
+  display: none;
+  font-size: 14px;
+  line-height: 10px;
+}
+
+.dialog label {
+  padding-top: 8px;
+}
+
+button.ui-widget  {
+  font-size: 16px !important;
+}
+
+.dialog input, .dialog select {
+    width: 100%;
+}
+
+label {
+    display: inline-block;
+    max-width: 100%;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+#dropzone svg {
+  /*margin: 8px;*/
+}
+
+#btn-apply, #btn-text {
+    cursor: pointer;
     background: #428BCA;
     color: #fff;
     font-family: Sans-serif;
@@ -303,7 +333,12 @@ a:hover { border-bottom: 2px solid #0087F7; }
     transition: all 0.3s ease 0s;
 }
 
-#btn-apply:hover {
+#btn-text {
+  margin-left: 32px;
+  width: 160px;
+}
+
+#btn-apply:hover, #btn-text:hover {
   background: #3071A9
 }
 

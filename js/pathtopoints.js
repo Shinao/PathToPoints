@@ -1,67 +1,155 @@
+// All properties needed
 var step_point = 10;
 var current_svg_xml = "";
 var current_svg_width = 0;
 var current_svg_height = 0;
+var itemInsideDropzone = null;
+var dropzone = null;
+var msToWaitAfterOverlay = 250;
 
-$(function() {
-    document.getElementById('dropzone').addEventListener('drop', manageDropFromTitle, false);
+$(document).ready(function() {
+    setupPointsSetting();
+    setupGenerationFromText();
+    setupCanvas();
+    setupDropzone();
 
-    $("#step_point").val(step_point.toString());
-    $('#btn-apply').click(function() {
-        step_point = parseInt($("#step_point").val());
+    // Directly drop the title logo to debug
+    // current_svg_xml = $("#svgTitle")[0].outerHTML;
+    // generatePointsFromSvg();
+});
 
-        if (current_svg_xml == "")
-            return;
-            
-        HoldOn.open({message:"Applying new step points length to SVG"});
-        if (step_point <= 0) step_point = 1;
-        setTimeout(generatePointsFromSvg, 500);
-    });
-
+function setupCanvas() {
     paper = Raphael(document.getElementById("canvas"), '100%', '100%');
     current_displayed_paths = null;
+}
 
-    var previousFile = null;
-
-     $('#dropzone').dropzone({ 
+function setupDropzone() {
+    document.getElementById('dropzone').addEventListener('drop', manageDropFromTitle, false);
+    
+    $('#dropzone').dropzone({
         url: "/upload",
         maxFilesize: 5,
         maxThumbnailFilesize: 1,
         autoProcessQueue: false,
         //acceptedFiles: '.svg',
         init: function() {
-            myDropzone = this;
+            dropzone = this;
 
             this.on('addedfile', function(file) {
                 if (file.type != "image/svg+xml") {
                     $.notify("Invalid format, only SVG is supported", "error");
-                    this.removeFile(file);
+                    removeItemFromDropzone();
                     return;
                 }
 
-                HoldOn.open({message:"Generating points from SVG"});
-                $(".note").hide();
+                displayHoldOnOverlay("Generating points from SVG");
 
-                if (previousFile != null) {
-                    this.removeFile(previousFile);
-                }
-                previousFile = file;
+                removeItemFromDropzone();
+
+                itemInsideDropzone = file;
                 read = new FileReader();
 
                 read.readAsBinaryString(file);
 
                 read.onloadend = function() {
                     current_svg_xml = read.result;
-                    setTimeout(generatePointsFromSvg, 500);
+                    setTimeout(generatePointsFromSvg, msToWaitAfterOverlay);
                 }   
             });
         }
     });
+}
 
-    // Directly drop the title logo to debug
-    // current_svg_xml = $("#svgTitle")[0].outerHTML;
-    // generatePointsFromSvg();
-});
+function hideHoldOnOverlay() {
+    HoldOn.close();
+}
+
+function displayHoldOnOverlay(msg) {
+    HoldOn.open({message: msg});
+    $(".note").hide();
+}
+
+function removeItemFromDropzone() {
+    current_svg_xml = "";
+
+    if (itemInsideDropzone != null) {
+        dropzone.removeFile(itemInsideDropzone);
+        itemInsideDropzone = null;
+    }
+
+    $(".dz-preview-manually").remove();
+}
+
+function setupGenerationFromText() {
+    $('#btn-text').click(function() {
+        $("#dialog-generate-from-text").dialog({
+        resizable: false,
+        height: "auto",
+        width: 400,
+        modal: true,
+        buttons: {
+            "Generate": function() {
+                displayHoldOnOverlay("Generating points from text");
+                $(this).dialog("close");
+
+                setTimeout(function () {
+                    removeItemFromDropzone();
+
+                    var font_selected = "fonts/" + $("#fonts").find(":selected").text();
+                    var url_font = $("#url_font").val();
+                    var text_svg = $("#text_svg").val();
+                    var font_size = parseInt($("#font_size").val());
+
+                    if (text_svg == "" || isNaN(font_size) || font_size <= 0) {
+                        $.notify("Invalid fields, do you even UI ?", "error");
+                        hideHoldOnOverlay();
+                        return;
+                    }
+
+                    if (url_font == "")
+                        url_font = font_selected;
+
+                    opentype.load(url_font, function(err, font) {
+                        console.assert(!err, err);
+                        paths = font.getPaths(text_svg, ($("#dropzone").width() / 2) - (font_size * text_svg.length / 4), font_size, font_size);
+                        
+                        var svgText = "<svg class='dz-preview-manually' width='100%' height='100%'>";
+                        for (var i = 0; i < paths.length; ++i) {
+                            svgText += paths[i].toSVG();
+                        }
+                        svgText += "</svg>";
+                        $("#dropzone").append(svgText);
+
+                        current_svg_xml = svgText;
+                        generatePointsFromSvg();
+
+                        hideHoldOnOverlay();
+                    });
+                }, msToWaitAfterOverlay);
+            },
+            "Cancel": function() {
+                $(this).dialog("close");
+            }
+        }
+        });
+    });
+}
+
+function setupPointsSetting() {
+    $("#step_point").val(step_point.toString());
+
+    $('#btn-apply').click(function() {
+        step_point = parseInt($("#step_point").val());
+
+        if (current_svg_xml == "")
+            return;
+
+        displayHoldOnOverlay("Applying new step points length to SVG");
+
+        if (step_point <= 0) step_point = 1;
+        setTimeout(generatePointsFromSvg, 500);
+    });
+}
 
 function getInfosFromPaths(paths) {
     var paths_info = [];
@@ -107,8 +195,7 @@ function getInfosFromPaths(paths) {
     else
         paths_info.scale = (paths_info.width > paper.canvas.clientWidth) ? (paper.canvas.clientWidth / paths_info.width) : 1;
 
-        console.log(paths_info);
-
+    // console.log(paths_info);
     // Display bboxes used for centering paths
     // var bboxes = [paths_info.bbox_right, paths_info.bbox_left, paths_info.bbox_top, paths_info.bbox_bottom];
     // for (var i = 0; i < 4; ++i) {
@@ -161,7 +248,7 @@ function generatePointsFromSvg() {
     addBelow("All Paths", "#2A2A2A", all_points, all_points_count / step_point);
     
     $('.bellows').bellows();
-    HoldOn.close();  
+    hideHoldOnOverlay();
 }
 
 function addBelow(name, color, data, nb_pts) {
@@ -182,8 +269,11 @@ function manageDropFromTitle(evt) {
     
     // Load local svg file from URL
     if (svgUrl.endsWith("img/TitlePathToPoints.svg")) {
+        removeItemFromDropzone();
+
+        $("#dropzone").append("<img class='dz-preview-manually' src='img/TitlePathToPoints.svg'>");
+
         current_svg_xml = $("#svgTitle")[0].outerHTML;
         generatePointsFromSvg();
-        console.log(current_svg_xml);
     }
 }
