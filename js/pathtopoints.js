@@ -95,7 +95,7 @@ function setupGenerationFromText() {
                 setTimeout(function () {
                     removeItemFromDropzone();
 
-                    var font_selected = "fonts/" + $("#fonts").find(":selected").text();
+                    var font_selected = "fonts/" + $("#fonts").find(":selected").val();
                     var url_font = $("#url_font").val();
                     var text_svg = $("#text_svg").val();
                     var font_size = parseInt($("#font_size").val());
