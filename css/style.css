@@ -252,7 +252,6 @@ html, body {
   float: right;
   width: 70%;
   height: 70%;
-  margin-top: 70px;
 }
 
 #dropzone.dz-drag-hover { border-style: solid; }
