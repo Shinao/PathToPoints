@@ -1,0 +1,19 @@
+{
+  "name": "pathtopoints",
+  "version": "1.0.0",
+  "description": "SVG Paths to array of points - https://shinao.github.io/PathToPoints/",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shinao/PathToPoints"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Shinao/PathToPoints/issues"
+  },
+  "homepage": "https://github.com/Shinao/PathToPoints#readme"
+}
