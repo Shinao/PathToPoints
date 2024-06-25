@@ -1,5 +1,6 @@
 // All properties needed
 var step_point = 10;
+var json_type = "tuples";
 var current_svg_xml = "";
 var current_svg_width = 0;
 var current_svg_height = 0;
@@ -17,6 +18,11 @@ $(document).ready(function() {
     // current_svg_xml = $("#svgTitle")[0].outerHTML;
     // generatePointsFromSvg();
 });
+
+function updatePointsSettings() {
+  step_point = parseInt($("#step_point").val());
+  json_type = $("#json_type option:checked").val();
+}
 
 function setupCanvas() {
     paper = Raphael(document.getElementById("canvas"), '100%', '100%');
@@ -53,6 +59,7 @@ function setupDropzone() {
 
                 read.onloadend = function() {
                     current_svg_xml = read.result;
+                    updatePointsSettings();
                     setTimeout(generatePointsFromSvg, msToWaitAfterOverlay);
                 }   
             });
@@ -121,6 +128,7 @@ function setupGenerationFromText() {
                         $("#dropzone").append(svgText);
 
                         current_svg_xml = svgText;
+                        updatePointsSettings();
                         generatePointsFromSvg();
 
                         hideHoldOnOverlay();
@@ -139,7 +147,7 @@ function setupPointsSetting() {
     $("#step_point").val(step_point.toString());
 
     $('#btn-apply').click(function() {
-        step_point = parseInt($("#step_point").val());
+        updatePointsSettings();
 
         if (current_svg_xml == "")
             return;
@@ -223,15 +231,19 @@ function generatePointsFromSvg() {
     var offset_path_y = (paths_info.y * paths_info.scale * -1) + (paper.canvas.clientHeight / 2) - (paths_info.height * paths_info.scale / 2);
     var all_points = "";
     var all_points_count = 0;
+    var all_points_json = [];
+
     for (var i = 0; i < paths.length; ++i) {
         var path = $($(paths).get(i)).attr('d').replace(' ', ',');
 
         // get points at regular intervals
         var data_points = "";
+        var data_points_json = [];
         var color = randomColor();
         var c;
         for (c = 0; c < Raphael.getTotalLength(path); c += step_point) {
             var point = Raphael.getPointAtLength(path, c);
+            data_points_json.push([point.x, point.y])
 
             data_points += point.x + "," + point.y + "&#13;";
             var circle = paper.circle(point.x * paths_info.scale, point.y * paths_info.scale, 2)
@@ -243,9 +255,15 @@ function generatePointsFromSvg() {
         all_points_count += c;
         all_points += data_points + "#&#13;";
         addBelow("Path " + i, color, data_points, c / step_point);
+
+        if(json_type === "single_array"){
+          data_points_json = data_points_json.flat()
+        }
+        all_points_json.push(data_points_json)
     }
 
     addBelow("All Paths", "#2A2A2A", all_points, all_points_count / step_point);
+    addBelow("All Paths JSON", "#2A2A2A", JSON.stringify(all_points_json, null, '\t'), all_points_count / step_point);
     
     $('.bellows').bellows();
     hideHoldOnOverlay();
@@ -274,6 +292,7 @@ function manageDropFromTitle(evt) {
         $("#dropzone").append("<img class='dz-preview-manually' src='img/TitlePathToPoints.svg'>");
 
         current_svg_xml = $("#svgTitle")[0].outerHTML;
+        updatePointsSettings();
         generatePointsFromSvg();
     }
 }

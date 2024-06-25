@@ -38,7 +38,11 @@
 
     <div id="settings">
       Point every x length
-      <input type="text" id="step_point"/>
+      <input type="text" id="step_point"/>, JSON like 
+      <select id="json_type">
+        <option value="tuples" selected>[ [x, y], [x, y] ]</option>
+        <option value="single_array">[ x, y, x, y ]</option>
+      </select>
       <button type="text" id="btn-apply">Apply</button>
       <button type="text" id="btn-text">Generate from text</button>
     </div>
